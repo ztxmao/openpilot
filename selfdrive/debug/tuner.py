@@ -43,10 +43,10 @@ def main():
     elif key == "j":
       cur = min(len(dat.keys()) - 1, cur + 1)
     elif key == "l":
-      dat[dat.keys()[cur]] += 0.05
+      dat[list(dat.keys())[cur]] += 0.05
       write = True
     elif key == "h":
-      dat[dat.keys()[cur]] -= 0.05
+      dat[list(dat.keys())[cur]] -= 0.05
       write = True
     elif key == "q":
       break
