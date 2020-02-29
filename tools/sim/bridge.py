@@ -112,12 +112,12 @@ def go(q):
   vehicle = world.spawn_actor(vehicle_bp, world_map.get_spawn_points()[16])
 
   # make tires less slippery
-  wheel_control = carla.WheelPhysicsControl(tire_friction=5)
+  wheel_control = carla.WheelPhysicsControl(tire_friction=7)
   physics_control = vehicle.get_physics_control()
   physics_control.mass = 1326
   physics_control.wheels = [wheel_control]*4
-  physics_control.torque_curve = [[20.0, 500.0], [5000.0, 500.0]]
-  physics_control.gear_switch_time = 0.0
+  physics_control.torque_curve = [[200., 1000.0], [5000.0, 500.0]]
+  physics_control.gear_switch_time = 0.5
   vehicle.apply_physics_control(physics_control)
 
   if args.autopilot:
@@ -151,11 +151,11 @@ def go(q):
   rk = Ratekeeper(100, print_delay_threshold=0.05)
 
   # init
-  A_throttle = 2.
-  A_brake = 2.
+  A_throttle = 0.5 / 0.5923
+  A_brake = 0.5 / 0.5923
   A_steer_torque = 1.
   fake_wheel = FakeSteeringWheel()
-  is_openpilot_engaged = False
+  is_openpilot_engaged = False # TODO: use op logic
   in_reverse = False
 
   throttle_out = 0

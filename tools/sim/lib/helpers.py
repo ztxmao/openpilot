@@ -4,7 +4,7 @@ class FakeSteeringWheel():
   def __init__(self, dt=0.01):
     # physical params
     self.DAC = 4. / 0.625 # convert torque value from can to Nm
-    self.k = 0.035
+    self.k = 0.025
     self.centering_k = 4.1 * 0.9
     self.b = 0.1 * 0.8
     self.I = 1 * 1.36 * (0.175**2)

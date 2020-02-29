@@ -15,7 +15,7 @@ cp = get_car_can_parser()
 packer = CANPacker("honda_civic_touring_2016_can_generated")
 rpacker = CANPacker("acura_ilx_2016_nidec")
 
-SR = 7.5
+SR = 10.3 # googled model 3 sr, works
 
 def angle_to_sangle(angle):
   return - math.degrees(angle) * SR
