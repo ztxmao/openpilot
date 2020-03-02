@@ -142,11 +142,6 @@ class Planner():
       self.a_model = desired_accel
       self.v_model = desired_speed
 
-      print()
-      print(speed, self.v_model, v_ego)
-      print(accel, self.a_model)
-      print()
-
     else:
       self.v_model = 50
       self.a_model = 10
