@@ -420,6 +420,7 @@ void* processing_thread(void *arg) {
     pool_push(&s->yuv_pool, yuv_idx);
 
     // send frame event
+    /*
     {
       capnp::MallocMessageBuilder msg;
       cereal::Event::Builder event = msg.initRoot<cereal::Event>();
@@ -451,6 +452,7 @@ void* processing_thread(void *arg) {
         s->frame_sock->send((char*)bytes.begin(), bytes.size());
       }
     }
+    */
 
     // one thumbnail per 5 seconds (instead of %5 == 0 posenet)
     if (cnt % 100 == 3) {
