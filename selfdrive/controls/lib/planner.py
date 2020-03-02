@@ -137,10 +137,15 @@ class Planner():
 
       desired_speed = speed + np.clip(distance/3.0, -speed*.1 - .5, speed*.1 + .5)
       speed_change = desired_speed - v_ego
-      desired_accel = np.clip((speed_change/2.0 + accel)/2.0, -ACCEL_LIMIT, ACCEL_LIMIT)
+      desired_accel = np.clip(speed_change/2.0 + accel, -ACCEL_LIMIT, ACCEL_LIMIT)
 
       self.a_model = desired_accel
-      self.v_model += self.a_model/FPS
+      self.v_model = desired_speed
+
+      print()
+      print(speed, self.v_model, v_ego)
+      print(accel, self.a_model)
+      print()
 
     else:
       self.v_model = 50
