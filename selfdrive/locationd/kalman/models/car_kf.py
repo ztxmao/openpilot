@@ -46,8 +46,8 @@ class CarKalman():
 
   # state covariance
   P_initial = np.diag([
-    .1**2,
-    .1**2,
+    .01**2,
+    .01**2,
     math.radians(0.1)**2,
     math.radians(0.1)**2,
 
@@ -58,19 +58,17 @@ class CarKalman():
 
   # process noise
   Q = np.diag([
-    (.05/10)**2,
-    .0001**2,
-    math.radians(0.01)**2,
-    math.radians(0.2)**2,
+    (.05/10000)**2,
+    .001**2,
+    math.radians(0.005)**2,
+    math.radians(0.05)**2,
 
-    .1**2, .1**2,
+    .01**2, .01**2,
     math.radians(0.1)**2,
     math.radians(0.1)**2,
   ])
 
   obs_noise = {
-    ObservationKind.ROAD_FRAME_XY_SPEED: np.diag([0.1**2, 0.1**2]),
-    ObservationKind.ROAD_FRAME_YAW_RATE: np.atleast_2d(math.radians(0.1)**2),
     ObservationKind.STEER_ANGLE: np.atleast_2d(math.radians(0.1)**2),
     ObservationKind.ANGLE_OFFSET_FAST: np.atleast_2d(math.radians(5.0)**2),
     ObservationKind.STEER_RATIO: np.atleast_2d(50.0**2),
@@ -188,10 +186,14 @@ class CarKalman():
       P = self.filter.covs()
     self.filter.init_state(state, P, filter_time)
 
-  def predict_and_observe(self, t, kind, data):
+  def predict_and_observe(self, t, kind, data, R=None):
     if len(data) > 0:
       data = np.atleast_2d(data)
-    self.filter.predict_and_update_batch(t, kind, data, self.get_R(kind, len(data)))
+
+    if R is None:
+      R = self.get_R(kind, len(data))
+
+    self.filter.predict_and_update_batch(t, kind, data, R)
 
 
 if __name__ == "__main__":

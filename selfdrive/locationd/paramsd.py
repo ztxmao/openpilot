@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
+import numpy as np
 import math
 
 import cereal.messaging as messaging
 from selfdrive.locationd.kalman.models.car_kf import CarKalman, ObservationKind, States
+
+from selfdrive.controls.lib.vehicle_model import VehicleModel
+from selfdrive.car.toyota.interface import CarInterface
+from selfdrive.car.toyota.values import CAR
 
 CARSTATE_DECIMATION = 5
 
@@ -17,23 +22,29 @@ class ParamsLearner:
     self.steering_angle = 0
     self.carstate_counter = 0
 
-  def update_active(self):
-    self.active = (abs(self.steering_angle) < 45 or not self.steering_pressed) and self.speed > 5
-
   def handle_log(self, t, which, msg):
     if which == 'liveLocationKalman':
 
       v_calibrated = msg.velocityCalibrated.value
-      # v_calibrated_std = msg.velocityCalibrated.std
-      self.speed = v_calibrated[0]
+      v_calibrated_std = msg.velocityCalibrated.std
 
       yaw_rate = msg.angularVelocityCalibrated.value[2]
-      # yaw_rate_std = msg.angularVelocityCalibrated.std[2]
+      yaw_rate_std = msg.angularVelocityCalibrated.std[2]
 
-      self.update_active()
-      if self.active:
-        self.kf.predict_and_observe(t, ObservationKind.ROAD_FRAME_YAW_RATE, [-yaw_rate])
-        self.kf.predict_and_observe(t, ObservationKind.ROAD_FRAME_XY_SPEED, [[v_calibrated[0], -v_calibrated[1]]])
+      self.active = v_calibrated[0] > 5
+      in_linear_region = abs(self.steering_angle) < 45 or not self.steering_pressed
+
+      if self.active and in_linear_region:
+        self.kf.predict_and_observe(t,
+                                    ObservationKind.ROAD_FRAME_YAW_RATE,
+                                    np.array([[[-yaw_rate]]]),
+                                    np.array([np.atleast_2d(yaw_rate_std**2)]))
+        self.kf.predict_and_observe(t,
+                                    ObservationKind.ROAD_FRAME_XY_SPEED,
+                                    np.array([[[v_calibrated[0], -v_calibrated[1]]]]),
+                                    np.array([np.diag([v_calibrated_std[0]**2, v_calibrated_std[1]**2])]))
+
+        self.kf.predict_and_observe(t, ObservationKind.ANGLE_OFFSET_FAST, np.array([[0]]))
 
         # Clamp values
         x = self.kf.x
@@ -43,7 +54,7 @@ class ParamsLearner:
         if not (0.5 < x[States.STIFFNESS] < 3.0):
           self.kf.predict_and_observe(t, ObservationKind.STIFFNESS, [1.0])
 
-      else:
+      if not self.active:
         self.kf.filter.filter_time = t - 0.1
 
     elif which == 'carState':
@@ -52,10 +63,8 @@ class ParamsLearner:
         self.steering_angle = msg.steeringAngle
         self.steering_pressed = msg.steeringPressed
 
-        self.update_active()
         if self.active:
-          self.kf.predict_and_observe(t, ObservationKind.STEER_ANGLE, [math.radians(msg.steeringAngle)])
-          self.kf.predict_and_observe(t, ObservationKind.ANGLE_OFFSET_FAST, [0])
+          self.kf.predict_and_observe(t, ObservationKind.STEER_ANGLE, np.array([[math.radians(msg.steeringAngle)]]))
         else:
           self.kf.filter.filter_time = t - 0.1
 
