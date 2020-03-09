@@ -5,9 +5,6 @@ import math
 import cereal.messaging as messaging
 from selfdrive.locationd.kalman.models.car_kf import CarKalman, ObservationKind, States
 
-from selfdrive.controls.lib.vehicle_model import VehicleModel
-from selfdrive.car.toyota.interface import CarInterface
-from selfdrive.car.toyota.values import CAR
 
 CARSTATE_DECIMATION = 5
 
