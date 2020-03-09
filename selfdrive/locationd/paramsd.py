@@ -54,9 +54,6 @@ class ParamsLearner:
         if not (0.5 < x[States.STIFFNESS] < 3.0):
           self.kf.predict_and_observe(t, ObservationKind.STIFFNESS, [1.0])
 
-      if not self.active:
-        self.kf.filter.filter_time = t - 0.1
-
     elif which == 'carState':
       self.carstate_counter += 1
       if self.carstate_counter % CARSTATE_DECIMATION == 0:
@@ -65,8 +62,11 @@ class ParamsLearner:
 
         if self.active:
           self.kf.predict_and_observe(t, ObservationKind.STEER_ANGLE, np.array([[math.radians(msg.steeringAngle)]]))
-        else:
-          self.kf.filter.filter_time = t - 0.1
+
+    if not self.active:
+      # Reset time when stopped so uncertainty doesn't grow
+      self.kf.filter.filter_time = t
+      self.kf.filter.reset_rewind()
 
 
 def main(sm=None, pm=None):
