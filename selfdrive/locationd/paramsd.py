@@ -41,15 +41,15 @@ class ParamsLearner:
                                     np.array([[[v_calibrated[0], -v_calibrated[1]]]]),
                                     np.array([np.diag([v_calibrated_std[0]**2, v_calibrated_std[1]**2])]))
 
-        self.kf.predict_and_observe(t, ObservationKind.ANGLE_OFFSET_FAST, np.array([[0]]))
+        self.kf.predict_and_observe(t, ObservationKind.ANGLE_OFFSET_FAST, np.array([[[0]]]))
 
         # Clamp values
         x = self.kf.x
         if not (10 < x[States.STEER_RATIO] < 25):
-          self.kf.predict_and_observe(t, ObservationKind.STEER_RATIO, [15.0])
+          self.kf.predict_and_observe(t, ObservationKind.STEER_RATIO, np.array([[[15.0]]]))
 
         if not (0.5 < x[States.STIFFNESS] < 3.0):
-          self.kf.predict_and_observe(t, ObservationKind.STIFFNESS, [1.0])
+          self.kf.predict_and_observe(t, ObservationKind.STIFFNESS, np.array([[[1.0]]]))
 
     elif which == 'carState':
       self.carstate_counter += 1
@@ -58,7 +58,7 @@ class ParamsLearner:
         self.steering_pressed = msg.steeringPressed
 
         if self.active:
-          self.kf.predict_and_observe(t, ObservationKind.STEER_ANGLE, np.array([[math.radians(msg.steeringAngle)]]))
+          self.kf.predict_and_observe(t, ObservationKind.STEER_ANGLE, np.array([[[math.radians(msg.steeringAngle)]]]))
 
     if not self.active:
       # Reset time when stopped so uncertainty doesn't grow
